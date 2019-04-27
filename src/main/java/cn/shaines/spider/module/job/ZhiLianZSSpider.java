@@ -13,34 +13,62 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 智联 中山 爬虫
+ *
  * @author houyu
  * @createTime 2019/4/21 20:59
  */
+@SuppressWarnings({"AlibabaAvoidCommentBehindStatement", "Duplicates"})
 public class ZhiLianZSSpider implements SpiderInterface {
 
-    HttpUtil httpUtil = HttpUtil.get();         // 自己封装的一个网络请求工具类,
-    EasyUtil easyUtil = EasyUtil.get();         // 自己封装的一个公用工具类
+    // 自己封装的一个网络请求工具类,
+    HttpUtil httpUtil = HttpUtil.get();
+    // 自己封装的一个公用工具类
+    EasyUtil easyUtil = EasyUtil.get();
 
     /**
      * 处理薪资词云图
+     *
      * @return
      */
-    private Object handlerSalary(){
-        List<Map<String, Object>> dataList = (List<Map<String, Object>>)process(null);
+    private Object handlerSalary() {
+        List<Map<String, Object>> dataList = (List<Map<String, Object>>) process(null);
 
         System.out.println("智联中山java招聘信息共: " + dataList.size() + " 条");
 
         List<String> list = new ArrayList<>(dataList.size());
-        dataList.forEach((v) -> list.add((String)v.get("薪资待遇")));
+        dataList.forEach((v) -> list.add((String) v.get("薪资待遇")));
         Map<String, Integer> salaryMap = easyUtil.getAloneCountInList(list);
 
+        List<String> tempList = new ArrayList<>(dataList.size() * 4);
+        salaryMap.forEach((k, v) -> {
+            if (k.contains("-")) {
+                String[] split = k.split("-");
+                String startStr = split[0].replace("K", "");
+                String endStr = split[1].replace("K", "");
+                int startNum = Integer.parseInt(startStr);
+                int endNum = Integer.parseInt(endStr);
+                while (startNum < endNum + 1) {
+                    int num = startNum++;
+                    for (int i = 0; i < v; i++) {
+                        tempList.add(num + "");
+                    }
+                }
+            }else {
+                for (int i = 0; i < v; i++) {
+                    tempList.add(k + "");
+                }
+            }
+        });
+        System.out.println(tempList);
+        salaryMap = easyUtil.getAloneCountInList(tempList);
         System.out.println("salaryMap = " + salaryMap);
-
         return null;
     }
 
     /**
      * 解析网页数据
+     *
      * @param param
      * @return
      */
@@ -115,10 +143,11 @@ public class ZhiLianZSSpider implements SpiderInterface {
 
     /**
      * 网络请求数据
+     *
      * @param page
      * @return
      */
-    private String getHtml(int page){
+    private String getHtml(int page) {
         String url = "https://fe-api.zhaopin.com/c/i/sou?pageSize=1000&cityId=780&workExperience=-1&education=-1&companyType=-1&employmentType=-1&jobWelfareTag=-1&kw=java&kt=3";
         String html = httpUtil.getHtml(url);
         // System.out.println(html);
