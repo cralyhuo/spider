@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
  * @author: houyu
  * @create: 2018-12-06 22:57
  */
+@SuppressWarnings("Duplicates")
 public class HttpUtil {
 
     /**

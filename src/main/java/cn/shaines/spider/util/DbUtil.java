@@ -73,6 +73,8 @@ public class DbUtil {
         Connection connection = getConnection();
         PreparedStatement ps;
         int updateNum;
+        // 去除特殊字符,如表情等
+        sql = sql.replaceAll("[\ud800\udc00-\udbff\udfff\ud800-\udfff]", "");
         ps = connection.prepareStatement(sql);
         if(params != null){
             for(int i = 0 ; i < params.length ; i++){
@@ -151,9 +153,9 @@ public class DbUtil {
         dataSource.setUrl(URL);
         dataSource.setUsername(USERNAME);
         dataSource.setPassword(PASSWORD);
-        // dataSource.setInitialSize(5);
+        dataSource.setInitialSize(20);
         // dataSource.setMinIdle(1);
-        // dataSource.setMaxActive(1000);
+        dataSource.setMaxActive(1000);
         // dataSource.setPoolPreparedStatements(false);
     }
 
