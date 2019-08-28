@@ -17,7 +17,7 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     // 导入spring-data-jpa
-    // implementation('org.springframework.boot:spring-boot-starter-data-jpa')
+     implementation('org.springframework.boot:spring-boot-starter-data-jpa')
     // 导入 MySQL连接驱动 的依赖
      compile('mysql:mysql-connector-java:6.0.5')
     // 导入 druid 数据库连接池
@@ -38,6 +38,12 @@ dependencies {
     compile group: 'log4j', name: 'log4j', version: '1.2.17'
     // 添加htmlunit依赖
     // compile 'net.sourceforge.htmlunit:htmlunit:2.32'
+    // selenium
+    compile('org.seleniumhq.selenium:selenium-java:3.4.0')
+    // 添加邮件依赖
+    compile group: 'javax.mail', name: 'mail', version: '1.4.7'
+    // 添加邮件依赖
+    compile group: 'org.apdplat', name: 'word', version: '1.2'
 
     // providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
 

@@ -2,14 +2,16 @@ package cn.shaines.spider.module.job;
 
 import cn.shaines.spider.module.SpiderInterface;
 import cn.shaines.spider.util.DbUtil;
-import cn.shaines.spider.util.EasyUtil;
-import cn.shaines.spider.util.HttpUtil;
+import cn.shaines.spider.util.HttpURLConnectionUtil;
+import cn.shaines.spider.util.PublicUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 智联 深圳 爬虫
@@ -18,11 +20,6 @@ import java.util.*;
  */
 @SuppressWarnings({"WeakerAccess", "Duplicates"})
 public class ZhiLianSZSpider implements SpiderInterface {
-
-    // 自己封装的一个网络请求工具类,
-    HttpUtil httpUtil = HttpUtil.get();
-    // 自己封装的一个公用工具类
-    EasyUtil easyUtil = EasyUtil.get();
 
     // 定义一个标识创建一次表
     private int iscreatetableflag = 0;
@@ -74,7 +71,7 @@ public class ZhiLianSZSpider implements SpiderInterface {
 
         System.out.println(tempList);
 
-        Map<String, Integer> salaryMap = easyUtil.getAloneCountInList(tempList);
+        Map<String, Integer> salaryMap = PublicUtil.getAloneCountInList(tempList);
 
         System.out.println("\r\nsalaryMap = " + salaryMap);
 
@@ -111,7 +108,7 @@ public class ZhiLianSZSpider implements SpiderInterface {
                 String 结束时间 = data.getString("endDate");
                 String 所属城市 = data.getJSONObject("city").getString("display");
                 String 详情网址 = data.getString("positionURL");
-                String 福利多多 = easyUtil.join(data.getJSONArray("welfare").toArray(), ",");
+                String 福利多多 = PublicUtil.join(data.getJSONArray("welfare").toArray(), ",");
                 String 薪资待遇 = data.getString("salary");
                 String 工作年限 = data.getJSONObject("workingExp").getString("name");
                 dataMap.put("更新时间", 更新时间);
@@ -150,11 +147,11 @@ public class ZhiLianSZSpider implements SpiderInterface {
 
                 JSONObject positionLabel = JSON.parseObject(data.getString("positionLabel"));
                 JSONArray jobLight = positionLabel.getJSONArray("jobLight");
-                String 工作福利 = easyUtil.join(jobLight == null ? new String[]{} : jobLight.toArray(), ",");
+                String 工作福利 = PublicUtil.join(jobLight == null ? new String[]{} : jobLight.toArray(), ",");
                 dataMap.put("工作福利", 工作福利);
 
                 JSONArray skill = positionLabel.getJSONArray("skill");
-                String 掌握技能 = easyUtil.join(skill == null ? new String[]{} : skill.toArray(), ",");
+                String 掌握技能 = PublicUtil.join(skill == null ? new String[]{} : skill.toArray(), ",");
                 dataMap.put("掌握技能", 掌握技能);
 
                 System.out.println("dataMap = " + dataMap);
@@ -186,7 +183,7 @@ public class ZhiLianSZSpider implements SpiderInterface {
 //      String url = String.format("https://fe-api.zhaopin.com/c/i/sou?start=%d&pageSize=90&cityId=765&kw=JAVA&kt=3", start);
         String url = String.format("https://fe-api.zhaopin.com/c/i/sou?start=%d&pageSize=90&cityId=765&kw=JAVA&kt=3&rt=134542fe834e4a019404bf10c52124b3&_v=0.04244049&x-zp-page-request-id=6d260c9fff0d4668a158babf5ae396e0-1556345376278-699243", start);
 
-        String html = httpUtil.getHtml(url);
+        String html = HttpURLConnectionUtil.builder(url).execute().getBodyString();
         // System.out.println(html);
         System.out.println("\r\nstart = " + start + "\r\n");
         start += 90;

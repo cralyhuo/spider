@@ -1,12 +1,22 @@
 package cn.shaines.spider.util;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
 /**
  * @author houyu
  * @createTime 2019/4/19 22:49
  */
-public class IoUtil {
+public class IOUtil {
 
     /**
      * 流 转 文件

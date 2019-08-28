@@ -1,13 +1,8 @@
 package cn.shaines.spider.module.cnblog;
 
 import cn.shaines.spider.util.DbUtil;
-import cn.shaines.spider.util.EasyUtil;
-import cn.shaines.spider.util.HttpUtil;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
+import cn.shaines.spider.util.HttpURLConnectionUtil;
+import cn.shaines.spider.util.PublicUtil;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -15,18 +10,13 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 @SuppressWarnings("Duplicates")
 public class CnblogSpider {
-
-    /**
-     * 简单工具类
-     */
-    EasyUtil easyUtil = EasyUtil.get();
-    /**
-     * 网络请求工具类
-     */
-    HttpUtil httpUtil = HttpUtil.get();
 
     /**
      * POST请求的链接
@@ -39,7 +29,7 @@ public class CnblogSpider {
     /**
      * 定义一个标识创建一次表
      */
-    private static volatile int iscreatetableflag = 0;
+    private static volatile int isCreateTableFlag = 0;
     /**
      * 定义表名
      */
@@ -65,7 +55,7 @@ public class CnblogSpider {
             String lightblue = v.selectFirst(".lightblue").text();
             // 发布时间
             String time = v.selectFirst(".post_item_foot").text();
-            time = easyUtil.subStringBetween(time, "发布于 ", " 评论");
+            time = PublicUtil.subStringBetween(time, "发布于 ", " 评论");
             // 评论人数
             String comment = v.selectFirst(".article_comment > .gray").text();
             comment = comment.replace("评论(", "").replace(")", "");
@@ -84,12 +74,12 @@ public class CnblogSpider {
 
             //System.out.println(dataMap);
 
-            if (iscreatetableflag == 0){
+            if (isCreateTableFlag == 0){
                 synchronized (CnblogSpider.class){
                     // 确保之创建一次表
-                    if (iscreatetableflag == 0){
+                    if (isCreateTableFlag == 0){
                         DbUtil.createTable(tableName, dataMap.keySet().toArray(new String[]{}));
-                        iscreatetableflag = 1;
+                        isCreateTableFlag = 1;
                     }
                 }
             }
@@ -110,12 +100,7 @@ public class CnblogSpider {
 
         Map<String, Object> body = new HashMap<>(8);
         String JSONStr = "{\"CategoryId\": 808, \"CategoryType\": \"SiteHome\", \"ItemListActionName\": \"PostList\", \"PageIndex\": %d, \"ParentCategoryId\": 0, \"TotalPostCount\": 4000}";
-        JSONStr = String.format(JSONStr, pageIndex);
-        body.put("JSON", JSONStr);
-        // String url, Map<String, Object> header, int postType, Map<String, Object> body, String bodyCharset, Map<String, Object> proxy, String htmlCharset
-        String html = httpUtil.doPost(BASE_URL, DEFAULT_HEADER, HttpUtil.PostType.JSON, body, "UTF-8", null, "UTF-8");
-
-        //System.out.println("html = " + html);
+        String html = HttpURLConnectionUtil.builderPost(BASE_URL).setHeader(DEFAULT_HEADER).setJson(JSONStr).execute().getBodyString();
         return html;
     }
 

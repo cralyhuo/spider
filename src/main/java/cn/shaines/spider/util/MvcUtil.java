@@ -1,23 +1,26 @@
 package cn.shaines.spider.util;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
 
 /**
- * @author houyu
- * @createTime 2019/4/19 22:46
+ * @program: data-interface
+ * @description:
+ * @author: houyu
+ * @create: 2018-12-06 16:16
  */
 public class MvcUtil {
 
-    private EasyUtil easyUtil = EasyUtil.get();
 
     /**
      * 获取用户真实IP地址，不使用request.getRemoteAddr();的原因是有可能用户使用了代理软件方式避免真实IP地址,
@@ -52,31 +55,10 @@ public class MvcUtil {
         return (ip == null || ip.length() == 0 ) ? request.getRemoteAddr() : ip;
     }
 
-
-    /**
-     * 返回数据
-     * @throws IOException
-     */
-    public void responseReturnData(HttpServletResponse response, String data) throws IOException {
-        response.setCharacterEncoding("UTF-8");
-        response.setContentType("text/html;charset=UTF-8");
-        response.setHeader("Pragma", "No-cache");
-        response.setHeader("Cache-Control", "no-cache");
-        response.setDateHeader("Expires", 0);
-        PrintWriter writer = response.getWriter();
-        writer.write(data == null ? "" : data);
-        writer.flush();
-        writer.close();
-        writer = null;
-    }
-
     public String getTokenFromRequest(HttpServletRequest request, String key) {
-        // Authorization
-        String token = request.getHeader(key);
-        if (token == null || token.length() == 0) {
-            // 请求头没有token
-            token = request.getParameter(key);
-            // 尝试去请求体(POST form or url param)获取token
+        String token = request.getHeader(key);                                  // Authorization
+        if (token == null || token.length() == 0) {                             // 请求头没有token
+            token = request.getParameter(key);                                  // 尝试去请求体(POST form or url param)获取token
             if (token == null || token.length() == 0) {
                 Cookie[] cookies = request.getCookies();
                 if (null != cookies) {
@@ -87,14 +69,6 @@ public class MvcUtil {
                         }
                     }
                 }
-//                if ((token == null || token.length() == 0)) { // 尝试去json实体中获取token,这里会报错,因为流被读取了,流关闭,解决方案是Filter中包装一层HttpServletRequestWrapper的实例对象内置一个byte[]
-//                    try {
-//                        token = new ObjectMapper().readValue(request.getInputStream(), HashMap.class).get(key).toString();
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                        token = "";
-//                    }
-//                }
             }
         }
         return token;
@@ -108,26 +82,82 @@ public class MvcUtil {
      * @throws IOException
      */
     public Map<String, String> parseParam(HttpServletRequest request) throws IOException {
-        Map<String, String> paramMap = paramMap = new HashMap<>(8);
-        if (request.getMethod().equalsIgnoreCase("POST") && request.getContentType().contains("application/json")){
-            String json = IoUtil.toString(request.getInputStream(), "UTF-8");
-            JSONObject jsonObject = JSONObject.parseObject(json);
-            for (Map.Entry<String, Object> entry : jsonObject.entrySet()) {
-                Object valueObj = entry.getValue();
-                if (valueObj instanceof JSONArray) {
-                    JSONArray valueArray = (JSONArray) valueObj;
-                    paramMap.put(entry.getKey(), easyUtil.join(valueArray.toArray(), ","));
-                }else {
-                    paramMap.put(entry.getKey(), String.valueOf(valueObj));
+        Map<String, String> paramMap = new HashMap<>(8);
+        if (String.valueOf(request.getContentType()).contains("application/json")){
+            String json = IOUtil.toString(request.getInputStream(), "UTF-8");
+            JSONObject jsonObject = JSON.parseObject(json);
+            if (jsonObject != null) {
+                for (Map.Entry<String, Object> entry : jsonObject.entrySet()) {
+                    Object valueObj = entry.getValue();
+                    if (valueObj instanceof JSONArray) {
+                        JSONArray valueArray = (JSONArray) valueObj;
+                        paramMap.put(entry.getKey(), PublicUtil.join(valueArray.toArray(), ","));
+                    }else {
+                        paramMap.put(entry.getKey(), String.valueOf(valueObj));
+                    }
                 }
             }
         }else {
             Map<String, String[]> parameterMap = request.getParameterMap();
             for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
-                paramMap.put(entry.getKey(), easyUtil.join(entry.getValue(), ","));
+                paramMap.put(entry.getKey(), PublicUtil.join(entry.getValue(), ","));
             }
         }
         return paramMap;
+    }
+
+    /**
+     * 返回数据
+     * @throws IOException
+     */
+    public static void returnData(HttpServletResponse response, String data) throws IOException {
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
+        response.setHeader("Pragma", "No-cache");
+        response.setHeader("Cache-Control", "no-cache");
+        response.setDateHeader("Expires", 0);
+        PrintWriter writer = response.getWriter();
+        writer.write(data == null ? "" : data);
+        writer.flush();
+        writer.close();
+        writer = null;
+    }
+
+    /**
+     * 下载数据
+     */
+    public static void downloadData(HttpServletResponse response, byte[] data, String fileName) {
+        try{
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; fileName=" + new String(fileName.getBytes("utf-8"), "ISO-8859-1"));
+            response.setHeader(HttpHeaders.CONTENT_TYPE, "application/octet-stream");
+            handleData(response, data);
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 查看数据
+     */
+    public static void viewData(HttpServletResponse response, byte[] data, String fileName) {
+        try{
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "fileName=" + new String(fileName.getBytes("utf-8"), "ISO-8859-1"));
+            handleData(response, data);
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    /** 处理数据 */
+    private static void handleData(HttpServletResponse response, byte[] data) throws IOException{
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setHeader(HttpHeaders.CONTENT_LENGTH, data.length + "");
+        response.setHeader(HttpHeaders.CONNECTION, "close");
+        try(ServletOutputStream outputStream = response.getOutputStream()) {
+            // 使用jdk1.7 try resource自动关闭流
+            outputStream.write(data == null ? new byte[]{} : data);
+            outputStream.flush();
+        }
     }
 
     /* ---------------------------------------单例模式---------------------------------------*/
