@@ -25,7 +25,7 @@ public class IOUtil {
         FileOutputStream fileOutputStream = null;
         try {
             fileOutputStream = new FileOutputStream(file);
-            copy(inputStream, fileOutputStream);
+            copy(inputStream, fileOutputStream, true);
         } finally {
             close(inputStream, fileOutputStream);
         }

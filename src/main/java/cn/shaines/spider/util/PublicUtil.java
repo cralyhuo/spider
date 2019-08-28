@@ -706,4 +706,22 @@ public class PublicUtil {
         return arrayOutputStream.toString();
     }
 
+    /**
+     * @description 获取设置固定时间在目前之后的日期
+     * @date 2019-08-28 09:46:53
+     * @author houyu for.houyu@foxmail.com
+     */
+    public static Date getCurrentAfterFixedTime(String hh_MM_ss) throws ParseException {
+        String setDateString = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        Date setDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(setDateString + " " + hh_MM_ss);
+        //
+        if(setDateTime.compareTo(new Date()) <= 0) {
+            // System.out.println("设置时间小");
+            setDateTime = new Date(setDateTime.getTime() + 1000 * 60 * 60 * 24);    // 加一天
+            // } else {
+            //     // System.out.println("设置时间大");
+        }
+        return setDateTime;
+    }
+
 }

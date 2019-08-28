@@ -9,10 +9,10 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -109,9 +109,10 @@ public class ThreadPoolUtil {
                     threadRefreshTimeMap    = new ConcurrentHashMap<>(16);
                     // cachedThreadPool        = Executors.newCachedThreadPool();
                     // cachedThreadPool        = new ThreadPoolExecutor(0, 300, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
-                    // ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("custom-thre%ad-pool-util-d").build();// namedThreadFactory
-                    cachedThreadPool = new ThreadPoolExecutor(50, 100, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new ThreadPoolExecutor.AbortPolicy());
-                    monitorExecutorPool     = Executors.newScheduledThreadPool(1);
+                    // ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("custom-thread-pool-util-%d").build();// namedThreadFactory
+                    cachedThreadPool        = new ThreadPoolExecutor(50, 100, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new ThreadPoolExecutor.AbortPolicy());
+                    // monitorExecutorPool     = Executors.newScheduledThreadPool(1);
+                    monitorExecutorPool     = new ScheduledThreadPoolExecutor(1);
                     poolRefreshTime         = System.currentTimeMillis();
                     monitorExecutorPool.scheduleAtFixedRate(monitorWorker, 0, 1, TimeUnit.SECONDS);
                     needMonitorWorkerFlag = false;

@@ -127,7 +127,7 @@ public class ProxyPoolUtil {
     public String getProxy() {
         this.lastTenTimes.add(System.currentTimeMillis());
         this.countAdder.increment();
-        if(this.readyProxyList == null || this.readyProxyList.size() == 0) {
+        if(this.readyProxyList == null) {
             return null;
         }
         if(this.readyProxyList.size() < 10) {
@@ -149,6 +149,7 @@ public class ProxyPoolUtil {
             // fastFlag 或者 可用的数量小于10
             logger.debug("达到重复使用代理的条件");
             if(this.readyProxyList.size() == 0) {
+                logger.debug("准备就绪的代理已经使用完毕, 正在使用上一次测试完毕的代理");
                 this.readyProxyList = new LinkedList<>(this.sortMap.values());
             }
             if(this.readyProxyList.size() > 0) {

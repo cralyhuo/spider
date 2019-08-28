@@ -7,7 +7,6 @@ import cn.shaines.spider.util.PublicUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,12 +33,7 @@ public class ZhiLianSZSpider implements SpiderInterface {
      * @return
      */
     private Object handlerSalary(){
-        List<Map<String, Object>> dataList = null;
-        try {
-            dataList = DbUtil.executeQuery("SELECT 薪资待遇 FROM " + tableName);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        List<Map<String, Object>> dataList = DbUtil.executeQuery("SELECT 薪资待遇 FROM " + tableName);;
 
         System.out.println("智联深圳java招聘信息共: " + dataList.size() + " 条");
 
